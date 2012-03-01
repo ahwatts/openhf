@@ -1,19 +1,1 @@
-%script{ :id => 'openhf_fragment_shader', :type => 'x-shader/x-fragment' }
-  :plain
-    precision mediump float;
-    void main(void) {
-      gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-    }
-
-%script{ :id => 'openhf_vertex_shader', :type => 'x-shader/x-vertex' }
-  :plain
-    attribute vec3 aVertexPosition;
-
-    uniform mat4 uMVMatrix;
-    uniform mat4 uPMatrix;
-
-    void main(void) {
-        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
-    }
-
 %canvas{ :id => 'openhf_canvas', :style => 'border:none;',  :width => 800, :height => 600 }

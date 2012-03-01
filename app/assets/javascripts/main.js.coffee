@@ -2,43 +2,56 @@
 # All this logic will automatically be available in application.js.
 # You can use CoffeeScript in this file: http://jashkenas.github.com/coffee-script/
 
-gl = null
-shaderProgram = null
+GL = null
+SHADER_PROGRAM = null
 
-getShader = (selector) ->
-  tag = $(selector)[0]
-  if tag.type == "x-shader/x-fragment"
-    shader = gl.createShader(gl.FRAGMENT_SHADER)
-  else if tag.type == "x-shader/x-vertex"
-    shader = gl.createShader(gl.VERTEX_SHADER)
-  else
-    shader = null
+VERTEX_SHADER_SOURCE = """
+    attribute vec3 aVertexPosition;
 
-  gl.shaderSource(shader, tag.html())
-  gl.compileShader(shader)
+    uniform mat4 uMVMatrix;
+    uniform mat4 uPMatrix;
 
-  shader
+    void main(void) {
+      gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+    }
+"""
+
+FRAGMENT_SHADER_SOURCE = """
+    precision mediump float;
+
+    void main(void) {
+      gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+    }
+"""
 
 initGL = (canvas) ->
   errorMessage = ""
-  gl = canvas.getContext("experimental-webgl")
-  gl.viewportWidth = canvas.width
-  gl.viewportHeight = canvas.height
+  GL = canvas.getContext("experimental-webgl")
+  GL.viewportWidth = canvas.width
+  GL.viewportHeight = canvas.height
+
 
 initShaders = () ->
-  fragmentShader = getShader("#openhf_fragment_shader")
-  vertexShader = getShader("#openhf_vertex_shader")
+  vertexShader = GL.createShader(GL.VERTEX_SHADER)
+  GL.shaderSource(vertexShader, VERTEX_SHADER_SOURCE)
+  GL.compileShader(vertexShader)
 
-  shaderProgram = gl.createProgram()
-  gl.attachShader(shaderProgram, vertexShader)
-  gl.attachShader(shaderProgram, fragmentShader)
-  gl.linkProgram(shaderProgram)
-  gl.useProgram(shaderProgram)
+  fragmentShader = GL.createShader(GL.FRAGMENT_SHADER)
+  GL.shaderSource(fragmentShader, FRAGMENT_SHADER_SOURCE)
+  GL.compileShader(fragmentShader)
 
-  shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition")
-  gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute)
-  shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix")
-  shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix")
+  SHADER_PROGRAM = GL.createProgram()
+  GL.attachShader(SHADER_PROGRAM, vertexShader)
+  GL.attachShader(SHADER_PROGRAM, fragmentShader)
+  GL.linkProgram(SHADER_PROGRAM)
+  GL.useProgram(SHADER_PROGRAM)
+
+  SHADER_PROGRAM.vertexPositionAttribute = GL.getAttribLocation(SHADER_PROGRAM, "aVertexPosition")
+  GL.enableVertexAttribArray(SHADER_PROGRAM.vertexPositionAttribute)
+
+  SHADER_PROGRAM.pMatrixUniform = GL.getUniformLocation(SHADER_PROGRAM, "uPMatrix")
+  SHADER_PROGRAM.mvMatrixUniform = GL.getUniformLocation(SHADER_PROGRAM, "uMVMatrix")
+
 
 $(document).ready ->
   canvas = $("#openhf_canvas")[0]
