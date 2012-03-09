@@ -2,8 +2,16 @@
 # All this logic will automatically be available in application.js.
 # You can use CoffeeScript in this file: http://jashkenas.github.com/coffee-script/
 
+gl = null
+shaderProgram = null
+mvMatrix = mat4.create()
+pMatrix = mat4.create()
+triangleVertexPositionBuffer = null
+squareVertexPositionBuffer = null
+
+
 initGL = (canvas) ->
-  window.gl = WebGLUtils.setupWebGL(canvas)
+  gl = WebGLUtils.setupWebGL(canvas)
   gl.viewportWidth = canvas.width
   gl.viewportHeight = canvas.height
 
@@ -42,7 +50,7 @@ initShaders = () ->
   fragmentShader = getShader(gl, "shader-fs")
   vertexShader = getShader(gl, "shader-vs")
 
-  window.shaderProgram = gl.createProgram()
+  shaderProgram = gl.createProgram()
   gl.attachShader(shaderProgram, vertexShader)
   gl.attachShader(shaderProgram, fragmentShader)
   gl.linkProgram(shaderProgram)
@@ -57,6 +65,57 @@ initShaders = () ->
 
   shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix")
   shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix")
+
+
+setMatrixUniforms = () ->
+  gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix)
+  gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix)
+
+
+drawScene = () ->
+  gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight)
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+  mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix)
+
+  mat4.identity(mvMatrix)
+
+  mat4.translate(mvMatrix, [-1.5, 0.0, -7.0])
+  gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer)
+  gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, triangleVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0)
+  setMatrixUniforms()
+  gl.drawArrays(gl.TRIANGLES, 0, triangleVertexPositionBuffer.numItems)
+
+  mat4.translate(mvMatrix, [3.0, 0.0, 0.0])
+  gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer)
+  gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, squareVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0)
+  setMatrixUniforms()
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems)
+
+
+initBuffers = () ->
+  triangleVertexPositionBuffer = gl.createBuffer()
+  gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer)
+  vertices = [
+     0.0,  1.0,  0.0,
+    -1.0, -1.0,  0.0,
+     1.0, -1.0,  0.0
+  ]
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
+  triangleVertexPositionBuffer.itemSize = 3
+  triangleVertexPositionBuffer.numItems = 3
+
+  squareVertexPositionBuffer = gl.createBuffer()
+  gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer)
+  vertices = [
+     1.0,  1.0,  0.0,
+    -1.0,  1.0,  0.0,
+     1.0, -1.0,  0.0,
+    -1.0, -1.0,  0.0
+  ]
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
+  squareVertexPositionBuffer.itemSize = 3
+  squareVertexPositionBuffer.numItems = 4
 
 
 $(document).ready ->
