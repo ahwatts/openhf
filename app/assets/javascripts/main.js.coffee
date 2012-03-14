@@ -6,11 +6,12 @@ ROOT_EIGHT = 2.82843
 
 mainLoop = (renderer, camera, scene) ->
   time = 0.0
+  sphere = scene.getChildByName('sphere', false)
+
   update = () ->
-    time += 0.03
+    time += 0.06
     if time > ROOT_EIGHT
       time = -ROOT_EIGHT
-    sphere = scene.getChildByName('sphere', false)
     sphere.position.y = -(time*time) + 8
 
     requestAnimationFrame(update)
@@ -24,7 +25,7 @@ initRenderer = () ->
     antialias: true,
     preserveDrawingBuffer: true,
     clearColor: 0,
-    clearAlpha: 1
+    clearAlpha: 0
   })
   renderer.setSize(window.innerWidth, window.innerHeight)
   renderer
@@ -52,19 +53,14 @@ $(document).ready ->
   sphere.position = new THREE.Vector3(0, 1, 0)
   sphere.up = new THREE.Vector3(0, 1, 0)
 
-  lights = [
-    new THREE.PointLight(0xFFFFFF),
-    # new THREE.PointLight(0xFFFFFF)
-  ]
-  lights[0].position = new THREE.Vector3(0, 20, 0)
-  # lights[1].position = new THREE.Vector3(0, 20, 20)
+  light = new THREE.PointLight(0xFFFFFF)
+  light.position = new THREE.Vector3(0, 20, 0)
 
   scene = new THREE.Scene()
   scene.add(camera)
   scene.add(sphere)
   scene.add(ground)
-  for l in lights
-    scene.add(l)
+  scene.add(light)
 
   canvas = $(renderer.domElement)
   canvas.css('position', 'absolute')
