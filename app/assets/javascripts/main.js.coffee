@@ -2,7 +2,7 @@
 # All this logic will automatically be available in application.js.
 # You can use CoffeeScript in this file: http://jashkenas.github.com/coffee-script/
 
-ROOT_EIGHT = 2.82843
+ROOT_EIGHT = Math.sqrt(8)
 
 mainLoop = (renderer, camera, scene) ->
   time = 0.0
@@ -12,7 +12,7 @@ mainLoop = (renderer, camera, scene) ->
     time += 0.06
     if time > ROOT_EIGHT
       time = -ROOT_EIGHT
-    sphere.position.y = -(time*time) + 8
+    sphere.position.y = -(time*time) + 9
 
     requestAnimationFrame(update)
     renderer.render(scene, camera)
@@ -25,7 +25,7 @@ initRenderer = () ->
     antialias: true,
     preserveDrawingBuffer: true,
     clearColor: 0,
-    clearAlpha: 0
+    clearAlpha: 1
   })
   renderer.setSize(window.innerWidth, window.innerHeight)
   renderer
@@ -51,7 +51,6 @@ $(document).ready ->
     new THREE.MeshLambertMaterial({ color: 0xCC0000 }))
   sphere.name = 'sphere'
   sphere.position = new THREE.Vector3(0, 1, 0)
-  sphere.up = new THREE.Vector3(0, 1, 0)
 
   light = new THREE.PointLight(0xFFFFFF)
   light.position = new THREE.Vector3(0, 20, 0)
@@ -65,6 +64,11 @@ $(document).ready ->
   canvas = $(renderer.domElement)
   canvas.css('position', 'absolute')
   canvas.css('top', '0px')
+
+  $(window).bind 'resize', (event) ->
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
 
   $("#openhf_container").append(renderer.domElement)
 
