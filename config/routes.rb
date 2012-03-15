@@ -57,6 +57,5 @@ Openhf::Application.routes.draw do
   # match ':controller(/:action(/:id))(.:format)'
 
   root :to => 'main#hw1'
-
   match '/main/:action(.:format)', :controller => 'main', :as => 'main'
 end
