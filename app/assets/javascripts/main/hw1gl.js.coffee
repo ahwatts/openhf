@@ -52,3 +52,33 @@ $(document).ready ->
   gl.linkProgram(shaderProgram)
   if !gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)
     alert("Shader program failed to link: #{gl.getProgramInfoLog(shaderProgram)}")
+
+  positionIndex = gl.getAttribLocation(shaderProgram, "aPosition")
+  colorIndex = gl.getAttribLocation(shaderProgram, "aColor")
+  modelViewIndex = gl.getUniformLocation(shaderProgram, "uModelView")
+  projectionIndex = gl.getUniformLocation(shaderProgram, "uProjection")
+  gl.enableVertexAttribArray(positionIndex)
+  gl.enableVertexAttribArray(colorIndex)
+
+  positions = [
+     0.0,  1.0,  0.0,
+    -1.0, -1.0,  0.0,
+     1.0, -1.0,  0.0
+  ]
+  positions = gl.createBuffer()
+  gl.bindBuffer(gl.ARRAY_BUFFER, positions)
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
+
+  colors = [
+    1.0, 0.0, 0.0, 1.0,
+    0.0, 1.0, 0.0, 1.0,
+    0.0, 0.0, 1.0, 1.0
+  ]
+  colors = gl.createBuffer()
+  gl.bindBuffer(gl.ARRAY_BUFFER, colors)
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
+
+  drawScene = () ->
+    gl.viewport(0, 0, window.innerWidth, window.innerHeight)
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    mat4.perspective(45, window.innerWidth / window.innerHeight, 0.1, 1000.0, projection)
