@@ -78,7 +78,22 @@ $(document).ready ->
   gl.bindBuffer(gl.ARRAY_BUFFER, colors)
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
 
-  drawScene = () ->
+  projection = mat4.create()
+  modelView = mat4.create()
+
+  render = () ->
+    # requestAnimFrame(render)
     gl.viewport(0, 0, window.innerWidth, window.innerHeight)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
     mat4.perspective(45, window.innerWidth / window.innerHeight, 0.1, 1000.0, projection)
+    mat4.identity(modelView)
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, positions)
+    gl.vertexAttribPointer(positionIndex, 3, gl.FLOAT, false, 0, 0)
+    gl.bindBuffer(gl.ARRAY_BUFFER, colors)
+    gl.vertexAttribPointer(colorIndex, 4, gl.FLOAT, false, 0, 0)
+    gl.uniformMatrix4fv(projectionIndex, false, projection)
+    gl.uniformMatrix4fv(modelViewIndex, false, modelView)
+    gl.drawArrays(gl.TRIANGLES, 0, 3)
+  render()
