@@ -11,7 +11,7 @@ $(document).ready ->
   gl = WebGLUtils.setupWebGL(canvas.get(0))
 
   gl.clearColor(0, 0, 0, 1)
-  gl.enable(gl.DEPTH_TEST)
+  # gl.enable(gl.DEPTH_TEST)
 
   vertexShader = gl.createShader(gl.VERTEX_SHADER)
   gl.shaderSource(vertexShader, """
@@ -24,7 +24,7 @@ $(document).ready ->
     varying vec4 vColor;
 
     void main(void) {
-      gl_Position = uProjection * uModelView * vec4(aPosition, 1.0);
+      gl_Position = vec4(aPosition, 1.0); // uProjection * uModelView * vec4(aPosition, 1.0);
       vColor = aColor;
     }
   """)
@@ -39,7 +39,7 @@ $(document).ready ->
     varying vec4 vColor;
 
     void main(void) {
-      gl_FragColor = vColor;
+      gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0); // vColor;
     }
   """)
   gl.compileShader(fragmentShader)
@@ -57,16 +57,14 @@ $(document).ready ->
   colorIndex = gl.getAttribLocation(shaderProgram, "aColor")
   modelViewIndex = gl.getUniformLocation(shaderProgram, "uModelView")
   projectionIndex = gl.getUniformLocation(shaderProgram, "uProjection")
-  gl.enableVertexAttribArray(positionIndex)
-  gl.enableVertexAttribArray(colorIndex)
 
   positions = [
      0.0,  1.0,  0.0,
     -1.0, -1.0,  0.0,
      1.0, -1.0,  0.0
   ]
-  positions = gl.createBuffer()
-  gl.bindBuffer(gl.ARRAY_BUFFER, positions)
+  positionsBuffer = gl.createBuffer()
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionsBuffer)
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
 
   colors = [
@@ -74,26 +72,30 @@ $(document).ready ->
     0.0, 1.0, 0.0, 1.0,
     0.0, 0.0, 1.0, 1.0
   ]
-  colors = gl.createBuffer()
-  gl.bindBuffer(gl.ARRAY_BUFFER, colors)
+  colorsBuffer = gl.createBuffer()
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorsBuffer)
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
 
   projection = mat4.create()
   modelView = mat4.create()
 
   render = () ->
-    # requestAnimFrame(render)
+    requestAnimFrame(render)
     gl.viewport(0, 0, window.innerWidth, window.innerHeight)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-    mat4.perspective(45, window.innerWidth / window.innerHeight, 0.1, 1000.0, projection)
-    mat4.identity(modelView)
+    # mat4.perspective(45, window.innerWidth / window.innerHeight, 0.1, 1000.0, projection)
+    # mat4.identity(modelView)
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, positions)
+    gl.useProgram(shaderProgram)
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionsBuffer)
     gl.vertexAttribPointer(positionIndex, 3, gl.FLOAT, false, 0, 0)
-    gl.bindBuffer(gl.ARRAY_BUFFER, colors)
+    gl.enableVertexAttribArray(positionIndex)
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorsBuffer)
     gl.vertexAttribPointer(colorIndex, 4, gl.FLOAT, false, 0, 0)
-    gl.uniformMatrix4fv(projectionIndex, false, projection)
-    gl.uniformMatrix4fv(modelViewIndex, false, modelView)
+    gl.enableVertexAttribArray(colorIndex)
+    # gl.uniformMatrix4fv(projectionIndex, false, projection)
+    # gl.uniformMatrix4fv(modelViewIndex, false, modelView)
     gl.drawArrays(gl.TRIANGLES, 0, 3)
+    gl.flush()
   render()
