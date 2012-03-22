@@ -3,6 +3,8 @@
 
 $(document).ready ->
   canvas = $("#openhf_canvas")
+  gl = WebGLUtils.setupWebGL(canvas.get(0))
+
   width = $(window).width()
   height = $(window).height()
 
@@ -10,9 +12,8 @@ $(document).ready ->
 
   canvas.css('position', 'absolute')
   canvas.css('top', '0px')
-  canvas.width(width)
-  canvas.height(height)
-  gl = WebGLUtils.setupWebGL(canvas.get(0))
+  canvas.attr('width', width)
+  canvas.attr('height', height)
 
   gl.clearColor(0, 0, 0, 1)
   gl.enable(gl.DEPTH_TEST)
@@ -63,9 +64,9 @@ $(document).ready ->
   projectionIndex = gl.getUniformLocation(shaderProgram, "uProjection")
 
   positions = [
-    -0.75, -0.684,  0.0,
-     -1.0,   -1.0,  0.0,
-    -0.54,   -1.0,  0.0
+     0.0,  1.0,  0.0,
+    -1.0, -1.0,  0.0,
+     1.0, -1.0,  0.0
   ]
   positionsBuffer = gl.createBuffer()
   gl.bindBuffer(gl.ARRAY_BUFFER, positionsBuffer)
@@ -88,17 +89,14 @@ $(document).ready ->
     gl.viewport(0, 0, width, height)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-    mat4.identity(projection)
-    mat4.ortho(-1, 1, -1, 1, 1, -1, projection)
-    # mat4.perspective(45, width / height,  0.1, 100.0,  projection)
+    mat4.perspective(45, width / height,  0.1, 100.0,  projection)
 
     mat4.identity(modelView)
     mat4.lookAt(
-      [   0,   0,   1 ],
+      [   0,   0,   5 ],
       [   0,   0,   0 ],
       [   0,   1,   0 ],
       modelView)
-    # mat4.translate(modelView, [ -1.5, 0.0, -7.0 ])
 
     gl.useProgram(shaderProgram)
     gl.bindBuffer(gl.ARRAY_BUFFER, positionsBuffer)
