@@ -3,15 +3,19 @@
 
 $(document).ready ->
   canvas = $("#openhf_canvas")
+  width = $(window).width()
+  height = $(window).height()
+
+  console.debug("width = %o height = %o", width, height)
 
   canvas.css('position', 'absolute')
   canvas.css('top', '0px')
-  canvas.width(window.innerWidth)
-  canvas.height(window.innerHeight)
+  canvas.width(width)
+  canvas.height(height)
   gl = WebGLUtils.setupWebGL(canvas.get(0))
 
   gl.clearColor(0, 0, 0, 1)
-  # gl.enable(gl.DEPTH_TEST)
+  gl.enable(gl.DEPTH_TEST)
 
   vertexShader = gl.createShader(gl.VERTEX_SHADER)
   gl.shaderSource(vertexShader, """
@@ -24,7 +28,7 @@ $(document).ready ->
     varying vec4 vColor;
 
     void main(void) {
-      gl_Position = vec4(aPosition, 1.0); // uProjection * uModelView * vec4(aPosition, 1.0);
+      gl_Position = uProjection * uModelView * vec4(aPosition, 1.0);
       vColor = aColor;
     }
   """)
@@ -39,7 +43,7 @@ $(document).ready ->
     varying vec4 vColor;
 
     void main(void) {
-      gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0); // vColor;
+      gl_FragColor = vColor;
     }
   """)
   gl.compileShader(fragmentShader)
@@ -59,9 +63,9 @@ $(document).ready ->
   projectionIndex = gl.getUniformLocation(shaderProgram, "uProjection")
 
   positions = [
-     0.0,  1.0,  0.0,
-    -1.0, -1.0,  0.0,
-     1.0, -1.0,  0.0
+    -0.75, -0.684,  0.0,
+     -1.0,   -1.0,  0.0,
+    -0.54,   -1.0,  0.0
   ]
   positionsBuffer = gl.createBuffer()
   gl.bindBuffer(gl.ARRAY_BUFFER, positionsBuffer)
@@ -81,11 +85,20 @@ $(document).ready ->
 
   render = () ->
     requestAnimFrame(render)
-    gl.viewport(0, 0, window.innerWidth, window.innerHeight)
+    gl.viewport(0, 0, width, height)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-    # mat4.perspective(45, window.innerWidth / window.innerHeight, 0.1, 1000.0, projection)
-    # mat4.identity(modelView)
+    mat4.identity(projection)
+    mat4.ortho(-1, 1, -1, 1, 1, -1, projection)
+    # mat4.perspective(45, width / height,  0.1, 100.0,  projection)
+
+    mat4.identity(modelView)
+    mat4.lookAt(
+      [   0,   0,   1 ],
+      [   0,   0,   0 ],
+      [   0,   1,   0 ],
+      modelView)
+    # mat4.translate(modelView, [ -1.5, 0.0, -7.0 ])
 
     gl.useProgram(shaderProgram)
     gl.bindBuffer(gl.ARRAY_BUFFER, positionsBuffer)
@@ -94,8 +107,8 @@ $(document).ready ->
     gl.bindBuffer(gl.ARRAY_BUFFER, colorsBuffer)
     gl.vertexAttribPointer(colorIndex, 4, gl.FLOAT, false, 0, 0)
     gl.enableVertexAttribArray(colorIndex)
-    # gl.uniformMatrix4fv(projectionIndex, false, projection)
-    # gl.uniformMatrix4fv(modelViewIndex, false, modelView)
+    gl.uniformMatrix4fv(projectionIndex, false, projection)
+    gl.uniformMatrix4fv(modelViewIndex, false, modelView)
     gl.drawArrays(gl.TRIANGLES, 0, 3)
     gl.flush()
   render()
