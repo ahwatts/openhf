@@ -2,9 +2,9 @@
 #= require gl-matrix
 
 class BasicShader
-  constructor: (@gl) ->
-    @vertex = @gl.createShader(@gl.VERTEX_SHADER)
-    @gl.shaderSource(@vertex, """
+  constructor: () ->
+    @vertex = gl.createShader(gl.VERTEX_SHADER)
+    gl.shaderSource(@vertex, """
       attribute vec3 aPosition;
       attribute vec4 aColor;
 
@@ -18,12 +18,12 @@ class BasicShader
         vColor = aColor;
       }
     """)
-    @gl.compileShader(@vertex)
-    if !@gl.getShaderParameter(@vertex, @gl.COMPILE_STATUS)
-      alert("Vertex shader failed to compile: #{@gl.getShaderInfoLog(@vertex)}")
+    gl.compileShader(@vertex)
+    if !gl.getShaderParameter(@vertex, gl.COMPILE_STATUS)
+      alert("Vertex shader failed to compile: #{gl.getShaderInfoLog(@vertex)}")
 
-    @fragment = @gl.createShader(@gl.FRAGMENT_SHADER)
-    @gl.shaderSource(@fragment, """
+    @fragment = gl.createShader(gl.FRAGMENT_SHADER)
+    gl.shaderSource(@fragment, """
       precision mediump float;
 
       varying vec4 vColor;
@@ -32,39 +32,81 @@ class BasicShader
         gl_FragColor = vColor;
       }
     """)
-    @gl.compileShader(@fragment)
-    if !@gl.getShaderParameter(@fragment, @gl.COMPILE_STATUS)
-      alert("Fragment shader failed to compile: #{@gl.getShaderInfoLog(@fragment)}")
+    gl.compileShader(@fragment)
+    if !gl.getShaderParameter(@fragment, gl.COMPILE_STATUS)
+      alert("Fragment shader failed to compile: #{gl.getShaderInfoLog(@fragment)}")
 
-    @program = @gl.createProgram()
-    @gl.attachShader(@program, @vertex)
-    @gl.attachShader(@program, @fragment)
-    @gl.linkProgram(@program)
-    if !@gl.getProgramParameter(@program, @gl.LINK_STATUS)
-      alert("Shader program failed to link: #{@gl.getProgramInfoLog(shaderProgram)}")
+    @program = gl.createProgram()
+    gl.attachShader(@program, @vertex)
+    gl.attachShader(@program, @fragment)
+    gl.linkProgram(@program)
+    if !gl.getProgramParameter(@program, gl.LINK_STATUS)
+      alert("Shader program failed to link: #{gl.getProgramInfoLog(shaderProgram)}")
 
-    @positionIndex = @gl.getAttribLocation(@program, "aPosition")
-    @colorIndex = @gl.getAttribLocation(@program, "aColor")
-    @modelViewIndex = @gl.getUniformLocation(@program, "uModelView")
-    @projectionIndex = @gl.getUniformLocation(@program, "uProjection")
+    @positionIndex = gl.getAttribLocation(@program, "aPosition")
+    @colorIndex = gl.getAttribLocation(@program, "aColor")
+    @modelViewIndex = gl.getUniformLocation(@program, "uModelView")
+    @projectionIndex = gl.getUniformLocation(@program, "uProjection")
+window.BasicShader = BasicShader
 
 
-sphereVertices = () ->
-  verts = [
-    [  0, -1,  0 ], [  1,  0,  0 ], [  0,  0,  1 ],
-    [  0, -1,  0 ], [  0,  0, -1 ], [  1,  0,  0 ],
-    [  0, -1,  0 ], [ -1,  0,  0 ], [  0,  0, -1 ],
-    [  0, -1,  0 ], [  0,  0,  1 ], [ -1,  0,  0 ],
-    [  0,  1,  0 ], [  0,  0,  1 ], [  1,  0,  0 ],
-    [  0,  1,  0 ], [  1,  0,  0 ], [  0,  0, -1 ],
-    [  0,  1,  0 ], [  0,  0, -1 ], [ -1,  0,  0 ],
-    [  0,  1,  0 ], [ -1,  0,  0 ], [  0,  0,  1 ]
-  ]
+class SphereByRefinement
+  constructor: (@shader, @numRefs) ->
+    # Initialize the sphere to be an octohedron.
+    @vertices = [
+      [  0, -1,  0 ], [  1,  0,  0 ], [  0,  0,  1 ],
+      [  0, -1,  0 ], [  0,  0, -1 ], [  1,  0,  0 ],
+      [  0, -1,  0 ], [ -1,  0,  0 ], [  0,  0, -1 ],
+      [  0, -1,  0 ], [  0,  0,  1 ], [ -1,  0,  0 ],
+      [  0,  1,  0 ], [  0,  0,  1 ], [  1,  0,  0 ],
+      [  0,  1,  0 ], [  1,  0,  0 ], [  0,  0, -1 ],
+      [  0,  1,  0 ], [  0,  0, -1 ], [ -1,  0,  0 ],
+      [  0,  1,  0 ], [ -1,  0,  0 ], [  0,  0,  1 ]
+    ]
+    @vertexBuffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, @vertexBuffer)
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array($.map(@vertices, (n) -> n)),
+      gl.STATIC_DRAW)
+
+    @colors = ([ Math.abs(v[0]), Math.abs(v[1]), Math.abs(v[2]), 1 ] for v in @vertices)
+    @colorBuffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, @colorBuffer)
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array($.map(@colors, (n) -> n)),
+      gl.STATIC_DRAW)
+
+    @position = vec3.create([ 0, 0, 0 ])
+    @rotation = quat4.create([ 0, 1, 0, 0 ])
+    quat4.calculateW(@rotation)
+
+  render: (projectionParam, modelViewParam) ->
+    projection = mat4.create(projectionParam)
+    modelView = mat4.create(modelViewParam)
+    mat4.multiply(modelView, mat4.fromRotationTranslation(@rotation, @position))
+
+    gl.useProgram(@shader.program)
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, @vertexBuffer)
+    gl.vertexAttribPointer(@shader.positionIndex, 3, gl.FLOAT, false, 0, 0)
+    gl.enableVertexAttribArray(@shader.positionIndex)
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, @colorBuffer)
+    gl.vertexAttribPointer(@shader.colorIndex, 4, gl.FLOAT, false, 0, 0)
+    gl.enableVertexAttribArray(@shader.colorIndex)
+
+    gl.uniformMatrix4fv(@shader.projectionIndex, false, projection)
+    gl.uniformMatrix4fv(@shader.modelViewIndex, false, modelView)
+    gl.drawArrays(gl.TRIANGLES, 0, @vertices.length / 3)
+
+window.SphereByRefinement = SphereByRefinement
 
 
 $(document).ready ->
   canvas = $("#openhf_canvas")
-  gl = WebGLUtils.setupWebGL(canvas.get(0))
+  window.gl = WebGLUtils.setupWebGL(canvas.get(0))
 
   width = $(window).width()
   height = $(window).height()
@@ -79,33 +121,16 @@ $(document).ready ->
   gl.clearColor(0, 0, 0, 1)
   gl.enable(gl.DEPTH_TEST)
 
-  shaderProgram = new BasicShader(gl)
-
-  positions = [
-     0.0,  1.0,  0.0,
-    -1.0, -1.0,  0.0,
-     1.0, -1.0,  0.0
-  ]
-  positionsBuffer = gl.createBuffer()
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionsBuffer)
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
-
-  colors = [
-    1.0, 0.0, 0.0, 1.0,
-    0.0, 1.0, 0.0, 1.0,
-    0.0, 0.0, 1.0, 1.0
-  ]
-  colorsBuffer = gl.createBuffer()
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorsBuffer)
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
-
-  projection = mat4.create()
-  modelView = mat4.create()
+  shaderProgram = new BasicShader()
+  sphere = new SphereByRefinement(shaderProgram, 2)
 
   render = () ->
     requestAnimFrame(render)
     gl.viewport(0, 0, width, height)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+    projection = mat4.create()
+    modelView = mat4.create()
 
     mat4.perspective(45, width / height,  0.1, 100.0,  projection)
 
@@ -116,15 +141,6 @@ $(document).ready ->
       [   0,   1,   0 ],
       modelView)
 
-    gl.useProgram(shaderProgram.program)
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionsBuffer)
-    gl.vertexAttribPointer(shaderProgram.positionIndex, 3, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(shaderProgram.positionIndex)
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorsBuffer)
-    gl.vertexAttribPointer(shaderProgram.colorIndex, 4, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(shaderProgram.colorIndex)
-    gl.uniformMatrix4fv(shaderProgram.projectionIndex, false, projection)
-    gl.uniformMatrix4fv(shaderProgram.modelViewIndex, false, modelView)
-    gl.drawArrays(gl.TRIANGLES, 0, 3)
+    sphere.render(projection, modelView)
     gl.flush()
   render()
