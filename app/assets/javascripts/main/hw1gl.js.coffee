@@ -79,13 +79,19 @@ class SphereByRefinement
       gl.STATIC_DRAW)
 
     @position = vec3.create([ 0, 0, 0 ])
-    @rotation = quat4.create([ 0, 1, 0, 0 ])
+    @rotation = 0.0
     quat4.calculateW(@rotation)
+
+  update: () ->
+    @rotation += 1.0
+    if @rotation >= 360.0
+      @rotation = 0.0
 
   render: (projectionParam, modelViewParam) ->
     projection = mat4.create(projectionParam)
     modelView = mat4.create(modelViewParam)
-    mat4.multiply(modelView, mat4.fromRotationTranslation(@rotation, @position))
+    mat4.translate(modelView, @position)
+    mat4.rotateY(modelView, @rotation * Math.PI / 180.0)
 
     gl.useProgram(@shader.program)
 
@@ -126,6 +132,7 @@ $(document).ready ->
 
   render = () ->
     requestAnimFrame(render)
+    sphere.update()
     gl.viewport(0, 0, width, height)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
