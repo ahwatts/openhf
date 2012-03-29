@@ -105,7 +105,7 @@ class SphereByRefinement
 
     gl.uniformMatrix4fv(@shader.projectionIndex, false, projection)
     gl.uniformMatrix4fv(@shader.modelViewIndex, false, modelView)
-    gl.drawArrays(gl.TRIANGLES, 0, @vertices.length / 3)
+    gl.drawArrays(gl.TRIANGLES, 0, @vertices.length)
 
 window.SphereByRefinement = SphereByRefinement
 
