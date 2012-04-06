@@ -12,13 +12,13 @@ class WorldObject
     @shader = new BasicShader()
 
   update: (dt) ->
-    @worldPos = vec3.add(@worldPos, vec3.scale(@worldVelMag, dt*@worldVelDir))
+    @worldPos = vec3.add(@worldPos, vec3.scale(dt*@worldVelMag, @worldVelDir))
     @angPos = @angPos + @angVel*dt
     @angPos = @angPos - 2*Math.PI if @angPos > 2*Math.PI
 
 class Flyer extends WorldObject
-  constructor: () ->
-    super()
+  constructor: (world) ->
+    super(world)
     @verts = [
       [ -1,  1, 0 ],
       [ -1, -1, 0 ],
@@ -39,7 +39,7 @@ class Flyer extends WorldObject
     mat4.translate(modelView, @worldPos)
     mat4.rotateZ(modelView, @angPos)
 
-    gl.useProgram(@shader)
+    gl.useProgram(@shader.program)
 
     gl.bindBuffer(gl.ARRAY_BUFFER, @vertexBuffer)
     gl.vertexAttribPointer(@shader.positionIndex, 3, gl.FLOAT, false, 0, 0)
@@ -50,7 +50,7 @@ class Flyer extends WorldObject
 
     gl.uniformMatrix4fv(@shader.projectionIndex, false, @world.projection)
     gl.uniformMatrix4fv(@shader.modelViewIndex, false, modelView)
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, @vertices.length)
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, @verts.length)
 
 class World
   constructor: () ->
@@ -92,7 +92,7 @@ $(document).ready ->
   gl.enable(gl.DEPTH_TEST)
 
   world = new World()
-  world.objects.unshift(new Flyer())
+  world.objects.unshift(new Flyer(world))
 
   render = () ->
     requestAnimFrame(render)
