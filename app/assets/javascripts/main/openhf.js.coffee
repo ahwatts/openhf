@@ -1,5 +1,56 @@
 #= require webgl-utils
 #= require gl-matrix
+#= require main/basic_shader
+
+class WorldObject
+  constructor: (@world) ->
+    @worldPos = vec3.create([ 0, 0, 0 ])
+    @worldVelMag = 0.0
+    @worldVelDir = vec3.create([ 1, 0, 0 ])
+    @angPos = 0.0
+    @angVel = 0.0
+    @shader = new BasicShader()
+
+  update: (dt) ->
+    @worldPos = vec3.add(@worldPos, vec3.scale(@worldVelMag, dt*@worldVelDir))
+    @angPos = @angPos + @angVel*dt
+    @angPos = @angPos - 2*Math.PI if @angPos > 2*Math.PI
+
+class Flyer extends WorldObject
+  constructor: () ->
+    super()
+    @verts = [
+      [ -1,  1, 0 ],
+      [ -1, -1, 0 ],
+      [  1,  1, 0 ],
+      [  1, -1, 0 ]
+    ]
+    @color = [ 1, 1, 0, 1 ]
+
+    @vertexBuffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, @vertexBuffer)
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array($.map(@verts, (n) -> n)),
+      gl.STATIC_DRAW)
+
+  render: () ->
+    modelView = mat4.create(@world.modelViewStack[0])
+    mat4.translate(modelView, @worldPos)
+    mat4.rotateZ(modelView, @angPos)
+
+    gl.useProgram(@shader)
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, @vertexBuffer)
+    gl.vertexAttribPointer(@shader.positionIndex, 3, gl.FLOAT, false, 0, 0)
+    gl.enableVertexAttribArray(@shader.positionIndex)
+
+    gl.vertexAttrib4fv(@shader.colorIndex, new Float32Array(@color))
+    gl.disableVertexAttribArray(@shader.colorIndex)
+
+    gl.uniformMatrix4fv(@shader.projectionIndex, false, @world.projection)
+    gl.uniformMatrix4fv(@shader.modelViewIndex, false, modelView)
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, @vertices.length)
 
 class World
   constructor: () ->
@@ -10,12 +61,13 @@ class World
 
     @objects = []
 
-  update: () ->
-    # Nothing here...
+  update: (dt) ->
+    for object in @objects
+      object.update(dt)
 
   render: () ->
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-    @modelViewStack.pop() while @modelViewStack.length > 1
+    @modelViewStack.unshift() while @modelViewStack.length > 1
 
     for object in @objects
       object.render()
@@ -40,9 +92,10 @@ $(document).ready ->
   gl.enable(gl.DEPTH_TEST)
 
   world = new World()
+  world.objects.unshift(new Flyer())
 
   render = () ->
     requestAnimFrame(render)
-    world.update()
+    world.update(0.1)
     world.render()
   render()
