@@ -12,7 +12,10 @@ class WorldObject
     @shader = new BasicShader()
 
   update: (dt) ->
-    @worldPos = vec3.add(@worldPos, vec3.scale(dt*@worldVelMag, @worldVelDir))
+    ds = vec3.create()
+    dsMag = dt*@worldVelMag
+    vec3.scale(@worldVelDir, dsMag, ds)
+    vec3.add(@worldPos, ds)
     @angPos = @angPos + @angVel*dt
     @angPos = @angPos - 2*Math.PI if @angPos > 2*Math.PI
 
@@ -54,7 +57,7 @@ class Flyer extends WorldObject
 
 class World
   constructor: () ->
-    @projection = mat4.ortho(-100, 100, -100, 100, 0, 1000)
+    @projection = mat4.ortho(-100, 100, -100, 100, -1, 1000)
 
     @modelViewStack = []
     @modelViewStack.push(mat4.lookAt(0, 0, -1, 0, 0, 0, 0, 1, 0))
