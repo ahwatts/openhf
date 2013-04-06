@@ -8,7 +8,7 @@ class WorldObject
     @worldVelMag = 1.0
     @worldVelDir = vec3.clone([ 1, 1, 0 ])
     @angPos = 0.0
-    @angVel = 0.0
+    @angVel = 0.1
     @shader = new BasicShader()
 
   update: (dt) ->
@@ -54,9 +54,11 @@ class Flyer extends WorldObject
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, @verts.length)
 
 class World
-  constructor: () ->
+  constructor: (width, height) ->
     @projection = mat4.create()
     mat4.ortho(@projection, -100, 100, -100, 100, -1, 1000)
+    @width = width
+    @height = height
 
     mv = mat4.create()
     mat4.lookAt(mv, [ 0, 0, 1 ], [ 0, 0, 0 ], [ 0, 1, 0 ])
@@ -70,6 +72,7 @@ class World
 
   render: () ->
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    gl.viewport(0, 0, @width, @height)
     @modelViewStack.unshift() while @modelViewStack.length > 1
 
     for object in @objects
@@ -94,7 +97,7 @@ $(document).ready ->
   gl.clearColor(0, 0, 0, 1)
   gl.enable(gl.DEPTH_TEST)
 
-  world = new World()
+  world = new World(width, height)
   world.objects.unshift(new Flyer(world))
 
   render = () ->
