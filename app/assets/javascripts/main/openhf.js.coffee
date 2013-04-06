@@ -59,7 +59,7 @@ class World
     mat4.ortho(@projection, -100, 100, -100, 100, -1, 1000)
 
     mv = mat4.create()
-    mat4.lookAt(mv, [ 0, 0, -1 ], [ 0, 0, 0 ], [ 0, 1, 0 ])
+    mat4.lookAt(mv, [ 0, 0, 1 ], [ 0, 0, 0 ], [ 0, 1, 0 ])
     @modelViewStack = [ mv ]
 
     @objects = []
