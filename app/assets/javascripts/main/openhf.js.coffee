@@ -4,18 +4,16 @@
 
 class WorldObject
   constructor: (@world) ->
-    @worldPos = vec3.create([ 0, 0, 0 ])
+    @worldPos = vec3.clone([ 0, 0, 0 ])
     @worldVelMag = 1.0
-    @worldVelDir = vec3.create([ 1, 1, 0 ])
+    @worldVelDir = vec3.clone([ 1, 1, 0 ])
     @angPos = 0.0
     @angVel = 0.0
     @shader = new BasicShader()
 
   update: (dt) ->
-    ds = vec3.create()
     dsMag = dt*@worldVelMag
-    vec3.scale(@worldVelDir, dsMag, ds)
-    vec3.add(@worldPos, ds)
+    vec3.scaleAndAdd(@worldPos, @worldPos, @worldVelDir, dsMag)
     @angPos = @angPos + @angVel*dt
     @angPos = @angPos - 2*Math.PI if @angPos > 2*Math.PI
 
@@ -37,28 +35,19 @@ class Flyer extends WorldObject
       new Float32Array($.map(@verts, (n) -> n)),
       gl.STATIC_DRAW)
 
-    colors = ([ Math.abs(v[0]), Math.abs(v[1]), Math.abs(v[2]), 1 ] for v in @verts)
-    @colorBuffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, @colorBuffer)
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array($.map(colors, (n) -> n)),
-      gl.STATIC_DRAW)
-
   render: () ->
-    modelView = mat4.create(@world.modelViewStack[0])
-    mat4.translate(modelView, @worldPos)
-    mat4.rotateZ(modelView, @angPos)
+    modelView = mat4.clone(@world.modelViewStack[0])
+    mat4.translate(modelView, modelView, @worldPos)
+    mat4.rotateZ(modelView, modelView, @angPos)
 
     gl.useProgram(@shader.program)
+    gl.enableVertexAttribArray(@shader.positionIndex)
+    gl.disableVertexAttribArray(@shader.colorIndex)
 
     gl.bindBuffer(gl.ARRAY_BUFFER, @vertexBuffer)
     gl.vertexAttribPointer(@shader.positionIndex, 3, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(@shader.positionIndex)
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, @colorBuffer)
-    gl.vertexAttribPointer(@shader.colorIndex, 4, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(@shader.colorIndex)
+    gl.vertexAttrib4fv(@shader.colorIndex, @color)
 
     gl.uniformMatrix4fv(@shader.projectionIndex, false, @world.projection)
     gl.uniformMatrix4fv(@shader.modelViewIndex, false, modelView)
@@ -66,10 +55,12 @@ class Flyer extends WorldObject
 
 class World
   constructor: () ->
-    @projection = mat4.ortho(-100, 100, -100, 100, -1, 1000)
+    @projection = mat4.create()
+    mat4.ortho(@projection, -100, 100, -100, 100, -1, 1000)
 
-    @modelViewStack = []
-    @modelViewStack.push(mat4.lookAt(0, 0, -1, 0, 0, 0, 0, 1, 0))
+    mv = mat4.create()
+    mat4.lookAt(mv, [ 0, 0, -1 ], [ 0, 0, 0 ], [ 0, 1, 0 ])
+    @modelViewStack = [ mv ]
 
     @objects = []
 
