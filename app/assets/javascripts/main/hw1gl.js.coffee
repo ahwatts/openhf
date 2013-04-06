@@ -32,7 +32,6 @@ class SphereByRefinement
 
     @position = vec3.create([ 0, 0, 0 ])
     @rotation = 0.0
-    quat4.calculateW(@rotation)
 
   update: () ->
     @rotation += 1.0
@@ -40,10 +39,13 @@ class SphereByRefinement
       @rotation = 0.0
 
   render: (projectionParam, modelViewParam) ->
-    projection = mat4.create(projectionParam)
-    modelView = mat4.create(modelViewParam)
-    mat4.translate(modelView, @position)
-    mat4.rotateY(modelView, @rotation * Math.PI / 180.0)
+    projection = mat4.create()
+    modelView = mat4.create()
+    mat4.copy(projection, projectionParam)
+    mat4.copy(modelView, modelViewParam)
+    
+    mat4.translate(modelView, modelView, @position)
+    mat4.rotateY(modelView, modelView, @rotation * Math.PI / 180.0)
 
     gl.useProgram(@shader.program)
 
@@ -69,7 +71,7 @@ $(document).ready ->
   width = $(window).width()
   height = $(window).height()
 
-  console.debug("width = %o height = %o", width, height)
+  console.debug("width = %o height = %o aspect = %o", width, height, width / height)
 
   canvas.css('position', 'absolute')
   canvas.css('top', '0px')
@@ -91,14 +93,12 @@ $(document).ready ->
     projection = mat4.create()
     modelView = mat4.create()
 
-    mat4.perspective(45, width / height,  0.1, 100.0,  projection)
+    mat4.perspective(projection, Math.PI / 4, width / height,  0.1, 100.0)
 
-    mat4.identity(modelView)
-    mat4.lookAt(
+    mat4.lookAt(modelView,
       [   0,   0,   5 ],
       [   0,   0,   0 ],
-      [   0,   1,   0 ],
-      modelView)
+      [   0,   1,   0 ])
 
     sphere.render(projection, modelView)
     gl.flush()
