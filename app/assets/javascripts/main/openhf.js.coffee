@@ -5,8 +5,8 @@
 class WorldObject
   constructor: (@world) ->
     @worldPos = vec3.create([ 0, 0, 0 ])
-    @worldVelMag = 0.0
-    @worldVelDir = vec3.create([ 1, 0, 0 ])
+    @worldVelMag = 1.0
+    @worldVelDir = vec3.create([ 1, 1, 0 ])
     @angPos = 0.0
     @angVel = 0.0
     @shader = new BasicShader()
@@ -37,6 +37,14 @@ class Flyer extends WorldObject
       new Float32Array($.map(@verts, (n) -> n)),
       gl.STATIC_DRAW)
 
+    colors = ([ Math.abs(v[0]), Math.abs(v[1]), Math.abs(v[2]), 1 ] for v in @verts)
+    @colorBuffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, @colorBuffer)
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array($.map(colors, (n) -> n)),
+      gl.STATIC_DRAW)
+
   render: () ->
     modelView = mat4.create(@world.modelViewStack[0])
     mat4.translate(modelView, @worldPos)
@@ -48,8 +56,9 @@ class Flyer extends WorldObject
     gl.vertexAttribPointer(@shader.positionIndex, 3, gl.FLOAT, false, 0, 0)
     gl.enableVertexAttribArray(@shader.positionIndex)
 
-    gl.vertexAttrib4fv(@shader.colorIndex, new Float32Array(@color))
-    gl.disableVertexAttribArray(@shader.colorIndex)
+    gl.bindBuffer(gl.ARRAY_BUFFER, @colorBuffer)
+    gl.vertexAttribPointer(@shader.colorIndex, 4, gl.FLOAT, false, 0, 0)
+    gl.enableVertexAttribArray(@shader.colorIndex)
 
     gl.uniformMatrix4fv(@shader.projectionIndex, false, @world.projection)
     gl.uniformMatrix4fv(@shader.modelViewIndex, false, modelView)
