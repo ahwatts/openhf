@@ -15,6 +15,14 @@ class SphereByRefinement
       [  0,  1,  0 ], [  0,  0, -1 ], [ -1,  0,  0 ],
       [  0,  1,  0 ], [ -1,  0,  0 ], [  0,  0,  1 ]
     ]
+
+    for i in [0...@numRefs]
+      refined_vertices = this.refine(@vertices)
+      @vertices = (Array.apply([], v) for v in refined_vertices)
+
+    for v in @vertices
+      vec3.normalize(v, v)
+
     @vertexBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, @vertexBuffer)
     gl.bufferData(
@@ -30,8 +38,30 @@ class SphereByRefinement
       new Float32Array($.map(@colors, (n) -> n)),
       gl.STATIC_DRAW)
 
-    @position = vec3.create([ 0, 0, 0 ])
+    @position = vec3.clone([ 0, 0, 0 ])
     @rotation = 0.0
+
+  refine: (verts) ->
+    tris = ((vec3.clone(v) for v in verts.slice(i, i+3)) for i in [0...verts.length] by 3)
+    tri_mps = ([ tri, this.midpoints(tri) ] for tri in tris)
+    rv = []
+    for tmp in tri_mps
+      do (tmp) ->
+        rv.push(
+          tmp[0][0], tmp[1][0], tmp[1][2],
+          tmp[1][0], tmp[0][1], tmp[1][1],
+          tmp[1][0], tmp[1][1], tmp[1][2],
+          tmp[1][2], tmp[1][1], tmp[0][2])
+    rv
+
+  midpoints: (tri) ->
+    mp1 = vec3.create()
+    mp2 = vec3.create()
+    mp3 = vec3.create()
+    trivec = (vec3.clone(v) for v in tri)
+    [ vec3.lerp(mp1, trivec[0], trivec[1], 0.5),
+      vec3.lerp(mp2, trivec[1], trivec[2], 0.5),
+      vec3.lerp(mp3, trivec[2], trivec[0], 0.5) ]
 
   update: () ->
     @rotation += 1.0
@@ -82,7 +112,7 @@ $(document).ready ->
   gl.enable(gl.DEPTH_TEST)
 
   shaderProgram = new BasicShader()
-  sphere = new SphereByRefinement(shaderProgram, 2)
+  sphere = new SphereByRefinement(shaderProgram, 4)
 
   render = () ->
     requestAnimFrame(render)
