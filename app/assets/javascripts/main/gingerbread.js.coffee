@@ -83,7 +83,7 @@ class VertSeries
     gl.disableVertexAttribArray(@shader.colorIndex)
 
     gl.drawArrays(gl.POINTS, 0, @numToRender)
-    gl.drawArrays(gl.LINE_STRIP, 0, @numToRender)
+    # gl.drawArrays(gl.LINE_STRIP, 0, @numToRender)
 
 class Gingerbread
   constructor: (shader) ->
