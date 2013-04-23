@@ -1,4 +1,8 @@
 - content_for(:head) do
   = javascript_include_tag('main/openhf')
 %body
+  %div.info#pos
+  %div.info#vel_mag
+  %div.info#vel_dir
+  %div.info#mouse_pos
   %canvas{ :id => 'openhf' }

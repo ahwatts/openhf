@@ -5,13 +5,13 @@
 class WorldObject
   constructor: (@world) ->
     @worldPos = vec3.clone([ 0, 0, 0 ])
-    @worldVelMag = 1.0
+    @worldVelMag = 0.0
     @worldVelDir = vec3.clone([ 1, 1, 0 ])
     @angPos = 0.0
     @angVel = 0.1
     @shader = new BasicShader()
 
-  update: (dt) ->
+  update: (dt, mouse) ->
     dsMag = dt*@worldVelMag
     vec3.scaleAndAdd(@worldPos, @worldPos, @worldVelDir, dsMag)
     @angPos = @angPos + @angVel*dt
@@ -27,6 +27,7 @@ class Flyer extends WorldObject
       [  1, -1, 0 ]
     ]
     @color = [ 1, 1, 0, 1 ]
+    @mass = 10000.0
 
     @vertexBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, @vertexBuffer)
@@ -34,6 +35,46 @@ class Flyer extends WorldObject
       gl.ARRAY_BUFFER,
       new Float32Array($.map(@verts, (n) -> n)),
       gl.STATIC_DRAW)
+
+  update: (dt, mouse) ->
+    mp = mouse.positionVec()
+    k = 10.0
+    a = vec3.create()
+    v0 = vec3.create()
+    v1 = vec3.create()
+    x0 = vec3.clone(@worldPos)
+    x1 = vec3.create()
+    
+    vec3.scale(v0, @worldVelDir, @worldVelMag)
+    # v0 now holds the initial velocity as a vector.
+
+    # f = k*x
+    vec3.subtract(a, @worldPos, @worldPos)
+    vec3.scale(a, a, k)
+    # a now holds the force.
+
+    # a = f/m
+    vec3.scale(a, a, 1.0 / @mass)
+    # a now holds the acceleration.
+
+    # v1 = v0 + a*dt
+    vec3.scaleAndAdd(v1, v0, a, dt)
+    # v1 now holds the new velocity.
+
+    # x1 = x0 + v0*dt + (1/2)*a*dt^2
+    vec3.scaleAndAdd(x1, x0, v0, dt)
+    vec3.scaleAndAdd(x1, x1, a, 0.5*dt*dt)
+
+    @worldPos = x1
+    @worldVelMag = vec3.length(v1)
+    vec3.normalize(@worldVelDir, v1)
+
+    @angPos = @angPos + @angVel*dt
+    @angPos = @angPos - 2*Math.PI if @angPos > 2*Math.PI
+
+    $("#pos").html(vec3.str(@worldPos))
+    $("#vel_mag").html(@worldVelMag)
+    $("#vel_dir").html(vec3.str(@worldVelDir))
 
   render: () ->
     modelView = mat4.clone(@world.modelViewStack[0])
@@ -66,9 +107,9 @@ class World
 
     @objects = []
 
-  update: (dt) ->
+  update: (dt, mouse) ->
     for object in @objects
-      object.update(dt)
+      object.update(dt, mouse)
 
   render: () ->
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
@@ -80,7 +121,17 @@ class World
 
     gl.flush()
 
-window.World = World
+class Mouse
+  constructor: (x, y) ->
+    this.setPosition(x, y)
+
+  positionVec: () ->
+    vec3.clone([ @x, @y, 0.0 ])
+
+  setPosition: (x, y) ->
+    @x = x
+    @y = y
+    $("#mouse_pos").html("(" + @x + ", " + @y + ")")
 
 $(document).ready ->
   canvas = $('canvas#openhf')
@@ -99,9 +150,13 @@ $(document).ready ->
 
   world = new World(width, height)
   world.objects.unshift(new Flyer(world))
+  mouse = new Mouse(0, 0)
+
+  canvas.mousemove((event) ->
+    mouse.setPosition(event.pageX, event.pageY))
 
   render = () ->
-    requestAnimFrame(render)
-    world.update(0.1)
+    setTimeout((() -> requestAnimFrame(render)), 100)
+    world.update(0.1, mouse)
     world.render()
   render()
