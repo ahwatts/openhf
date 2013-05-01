@@ -98,18 +98,25 @@ class World
   constructor: (width, height) ->
     @projection = mat4.create()
     mat4.ortho(@projection, -100, 100, -100, 100, -1, 1000)
+    @projectionInverse = mat4.create()
+    mat4.invert(@projectionInverse, @projection)
     @width = width
     @height = height
 
     mv = mat4.create()
     mat4.lookAt(mv, [ 0, 0, 1 ], [ 0, 0, 0 ], [ 0, 1, 0 ])
     @modelViewStack = [ mv ]
+    @modelViewInverse = mat4.create()
+    mat4.invert(@modelViewInverse, @modelViewStack[0])
 
     @objects = []
 
   update: (dt, mouse) ->
     for object in @objects
       object.update(dt, mouse)
+    [ mNear, mFar ] = this.unproject(mouse.x, mouse.y)
+    $("#mouse_near").html(vec3.str(mNear))
+    $("#mouse_far").html(vec3.str(mFar))
 
   render: () ->
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
@@ -120,6 +127,19 @@ class World
       object.render()
 
     gl.flush()
+
+  unproject: (winX, winY) ->
+    viewX =  2 * (winX / @width) - 1
+    viewY = -2 * (winY / @height) + 1
+    winNear = vec3.fromValues(viewX, viewY, 0.0)
+    winFar = vec3.fromValues(viewX, viewY, 1.0)
+    mvpInverse = mat4.create()
+    mat4.multiply(mvpInverse, @modelViewInverse, @projectionInverse)
+    worldNear = vec3.create()
+    worldFar = vec3.create()
+    vec3.transformMat4(worldNear, winNear, mvpInverse)
+    vec3.transformMat4(worldFar, winFar, mvpInverse)
+    [ worldNear, worldFar ]
 
 class Mouse
   constructor: (x, y) ->
@@ -152,7 +172,7 @@ $(document).ready ->
   world.objects.unshift(new Flyer(world))
   mouse = new Mouse(0, 0)
 
-  canvas.mousemove((event) ->
+  $('body').mousemove((event) ->
     mouse.setPosition(event.pageX, event.pageY))
 
   render = () ->
