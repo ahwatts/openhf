@@ -27,7 +27,7 @@ class Flyer extends WorldObject
       [  1, -1, 0 ]
     ]
     @color = [ 1, 1, 0, 1 ]
-    @mass = 10000.0
+    @mass = 1000.0
 
     @vertexBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, @vertexBuffer)
@@ -37,8 +37,10 @@ class Flyer extends WorldObject
       gl.STATIC_DRAW)
 
   update: (dt, mouse) ->
-    mp = mouse.positionVec()
-    k = 10.0
+    [ mn, mf ] = @world.unproject(mouse.x, mouse.y)
+    k = 100.0
+    sf = vec3.create()
+    ff = vec3.create()
     a = vec3.create()
     v0 = vec3.create()
     v1 = vec3.create()
@@ -48,9 +50,15 @@ class Flyer extends WorldObject
     vec3.scale(v0, @worldVelDir, @worldVelMag)
     # v0 now holds the initial velocity as a vector.
 
-    # f = k*x
-    vec3.subtract(a, @worldPos, @worldPos)
-    vec3.scale(a, a, k)
+    # spring: f = k*x
+    mn[2] = 0.0
+    vec3.subtract(sf, mn, @worldPos)
+    vec3.scale(sf, sf, k)
+
+    # friction: f = -c*v
+    vec3.scale(ff, v0, -0.1)
+
+    vec3.add(a, ff, sf)
     # a now holds the force.
 
     # a = f/m
