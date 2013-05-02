@@ -27,7 +27,7 @@ class Flyer extends WorldObject
       [  1, -1, 0 ]
     ]
     @color = [ 1, 1, 0, 1 ]
-    @mass = 1000.0
+    @mass = 500.0
 
     @vertexBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, @vertexBuffer)
@@ -38,7 +38,7 @@ class Flyer extends WorldObject
 
   update: (dt, mouse) ->
     [ mn, mf ] = @world.unproject(mouse.x, mouse.y)
-    k = 100.0
+    k = 2000.0
     sf = vec3.create()
     ff = vec3.create()
     a = vec3.create()
@@ -55,8 +55,9 @@ class Flyer extends WorldObject
     vec3.subtract(sf, mn, @worldPos)
     vec3.scale(sf, sf, k)
 
-    # friction: f = -c*v
-    vec3.scale(ff, v0, -0.1)
+    # friction: f = -c*v^2
+    vec3.normalize(ff, v0)
+    vec3.scale(ff, ff, -20.0 *vec3.sqrLen(v0))
 
     vec3.add(a, ff, sf)
     # a now holds the force.
@@ -105,7 +106,7 @@ class Flyer extends WorldObject
 class World
   constructor: (width, height) ->
     @projection = mat4.create()
-    mat4.ortho(@projection, -100, 100, -100, 100, -1, 1000)
+    mat4.ortho(@projection, -100, 100, -100, 100, 0, 10)
     @projectionInverse = mat4.create()
     mat4.invert(@projectionInverse, @projection)
     @width = width
@@ -184,7 +185,7 @@ $(document).ready ->
     mouse.setPosition(event.pageX, event.pageY))
 
   render = () ->
-    setTimeout((() -> requestAnimFrame(render)), 100)
-    world.update(0.1, mouse)
+    setTimeout((() -> requestAnimFrame(render)), 32)
+    world.update(0.032, mouse)
     world.render()
   render()
