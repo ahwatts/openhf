@@ -1,5 +1,6 @@
 #= require webgl-utils
 #= require gl-matrix
+#= require gl-matrix-wrapper
 #= require main/basic_shader
 
 class WorldObject
