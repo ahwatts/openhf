@@ -38,6 +38,8 @@ class Mat2
 
   mul: matrixBinaryOp(mat2.multiply)
   multiply: matrixBinaryOp(mat2.multiply)
+  scale: matrixBinaryOpByScalar(mat2.scale)
 
   rotate: matrixBinaryOpByScalar(mat2.rotate)
-  scale: matrixBinaryOpByScalar(mat2.scale)
+
+window.M2 = Mat2
