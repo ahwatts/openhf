@@ -41,4 +41,4 @@ class Mat2d
 
   rotate: matrixBinaryOpByScalar(mat2d.rotate)
 
-window.M2d = Mat2d
+window.Mat2d = window.M2d = Mat2d

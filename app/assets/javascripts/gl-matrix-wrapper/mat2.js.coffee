@@ -42,4 +42,4 @@ class Mat2
 
   rotate: matrixBinaryOpByScalar(mat2.rotate)
 
-window.M2 = Mat2
+window.Mat2 = window.M2 = Mat2

@@ -77,4 +77,4 @@ Vector3.random = (scale) ->
   rv = vec3.create()
   vec3.random(rv, scale)
 
-window.V3 = Vector3
+window.Vector3 = window.V3 = Vector3
