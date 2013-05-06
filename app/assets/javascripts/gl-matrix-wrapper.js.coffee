@@ -4,3 +4,4 @@
 #= require gl-matrix-wrapper/mat2d
 #= require gl-matrix-wrapper/mat3
 #= require gl-matrix-wrapper/mat4
+#= require gl-matrix-wrapper/quat

@@ -36,6 +36,12 @@ WrapperUtils =
       new type(func(rv, @internal, s))
 
 
+  typedParameterizedBinaryOp: (type, internalType, func) ->
+    (other, t) ->
+      rv = internalType.create()
+      new type(func(rv, @internal, other.internal, t))
+
+
   partiallyApplyTypes: (type, internalType) ->
     rv = {}
     for k of WrapperUtils
