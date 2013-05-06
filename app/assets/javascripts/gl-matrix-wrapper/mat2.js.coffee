@@ -11,7 +11,7 @@ class Mat2
     else
       @internal = mat2.create()
 
-F = WrapperUtils.partiallyApplyTypes(WrapperUtils, Mat2, mat2d)
+F = WrapperUtils.partiallyApplyTypes(Mat2, mat2d)
 
 Mat2::determinant = F.scalarUnaryOp(mat2.determinant)
 Mat2::str = F.scalarUnaryOp(mat2.str)

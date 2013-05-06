@@ -1,29 +1,5 @@
 #= require gl-matrix
-
-factory = (func) ->
-  (argp) ->
-    arg = if argp instanceof Float32Array then argp else argp.internal
-    rv = mat3.create()
-    new Mat3(func(rv, arg))
-
-scalarUnaryOp = (func) ->
-  () ->
-    func(@internal)
-
-matrixUnaryOp = (func) ->
-  () ->
-    rv = mat4.create()
-    new Mat4(func(rv, @internal))
-
-matrixBinaryOp = (func) ->
-  (other) ->
-    rv = mat4.create()
-    new Mat4(func(rv, @internal, other.internal))
-
-matrixBinaryOpByScalar = (func) ->
-  (s) ->
-    rv = mat4.create()
-    new Mat4(func(rv, @internal, s))
+#= require gl-matrix-wrapper/wrapper_utils
 
 class Mat4
   constructor: (args) ->
@@ -34,27 +10,28 @@ class Mat4
     else
       @internal = mat4.create()
 
-  determinant: scalarUnaryOp(mat4.determinant)
-  str: scalarUnaryOp(mat4.str)
+F = WrapperUtils.partiallyApplyTypes(Mat4, mat4)
+
+Mat4::determinant = F.scalarUnaryOp(mat4.determinant)
+Mat4::str = F.scalarUnaryOp(mat4.str)
   
-  adjoint: matrixUnaryOp(mat4.adjoint)
-  inverse: matrixUnaryOp(mat4.invert)
-  invert: matrixUnaryOp(mat4.invert)
-  transpose: matrixUnaryOp(mat4.transpose)
+Mat4::adjoint = F.typedUnaryOp(mat4.adjoint)
+Mat4::inverse = F.typedUnaryOp(mat4.invert)
+Mat4::invert = F.typedUnaryOp(mat4.invert)
+Mat4::transpose = F.typedUnaryOp(mat4.transpose)
 
-  mul: matrixBinaryOp(mat4.multiply)
-  multiply: matrixBinaryOp(mat4.multiply)
-  scale: matrixBinaryOp(mat4.scale)
-  translate: matrixBinaryOp(mat4.translate)
+Mat4::mul = F.typedBinaryOp(mat4.multiply)
+Mat4::multiply = F.typedBinaryOp(mat4.multiply)
+Mat4::scale = F.typedBinaryOp(mat4.scale)
+Mat4::translate = F.typedBinaryOp(mat4.translate)
 
-  rotate: matrixBinaryOpByScalar(mat4.rotate)
+Mat4::rotate = F.typedBinaryOpByScalar(mat4.rotate)
 
-Mat4.fromRotationTranslation = (qp, vp) ->
-  rv = mat4.create()
-  q = if qp instanceof Float32Array then qp else qp.internal
-  v = if vp instanceof Float32Array then vp else vp.internal
-  mat4.fromRotationTranslation(rv, q, v)
-
-Mat4
+Mat4.fromQuat = F.factory(mat4.fromQuat)
+Mat4.fromRotationTranslation = F.factory(mat4.fromRotationTranslation)
+Mat4.frustum = F.factory(mat4.frustum)
+Mat4.lookAt = F.factory(mat4.lookAt)
+Mat4.ortho = F.factory(mat4.ortho)
+Mat4.perspective = F.factory(mat4.perspective)
 
 window.Mat4 = window.M4 = Mat4

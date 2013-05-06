@@ -1,29 +1,5 @@
 #= require gl-matrix
-
-factory = (func) ->
-  (argp) ->
-    arg = if argp instanceof Float32Array then argp else argp.internal
-    rv = mat3.create()
-    new Mat3(func(rv, arg))
-
-scalarUnaryOp = (func) ->
-  () ->
-    func(@internal)
-
-matrixUnaryOp = (func) ->
-  () ->
-    rv = mat3.create()
-    new Mat3(func(rv, @internal))
-
-matrixBinaryOp = (func) ->
-  (other) ->
-    rv = mat3.create()
-    new Mat3(func(rv, @internal, other.internal))
-
-matrixBinaryOpByScalar = (func) ->
-  (s) ->
-    rv = mat3.create()
-    new Mat3(func(rv, @internal, s))
+#= require gl-matrix-wrapper/wrapper_utils
 
 class Mat3
   constructor: (args) ->
@@ -34,24 +10,26 @@ class Mat3
     else
       @internal = mat3.create()
 
-  determinant: scalarUnaryOp(mat3.determinant)
-  str: scalarUnaryOp(mat3.str)
+F = WrapperUtils.partiallyApplyTypes(Mat3, mat3)
+
+Mat3::determinant = F.scalarUnaryOp(mat3.determinant)
+Mat3::str = F.scalarUnaryOp(mat3.str)
   
-  adjoint: matrixUnaryOp(mat3.adjoint)
-  inverse: matrixUnaryOp(mat3.invert)
-  invert: matrixUnaryOp(mat3.invert)
-  transpose: matrixUnaryOp(mat3.transpose)
+Mat3::adjoint = F.typedUnaryOp(mat3.adjoint)
+Mat3::inverse = F.typedUnaryOp(mat3.invert)
+Mat3::invert = F.typedUnaryOp(mat3.invert)
+Mat3::transpose = F.typedUnaryOp(mat3.transpose)
 
-  mul: matrixBinaryOp(mat3.multiply)
-  multiply: matrixBinaryOp(mat3.multiply)
-  scale: matrixBinaryOp(mat3.scale)
-  translate: matrixBinaryOp(mat3.translate)
+Mat3::mul = F.typedBinaryOp(mat3.multiply)
+Mat3::multiply = F.typedBinaryOp(mat3.multiply)
+Mat3::scale = F.typedBinaryOp(mat3.scale)
+Mat3::translate = F.typedBinaryOp(mat3.translate)
 
-  rotate: matrixBinaryOpByScalar(mat3.rotate)
+Mat3::rotate = F.typedBinaryOpByScalar(mat3.rotate)
 
-Mat3.fromMat2d = factory(mat3.fromMat2d)
-Mat3.fromMat4 = factory(mat3.fromMat4)
-Mat3.fromQuat = factory(mat3.fromQuat)
-Mat3.normalFromMat4 = factory(mat3.normalFromMat4)
+Mat3.fromMat2d = F.factory(mat3.fromMat2d)
+Mat3.fromMat4 = F.factory(mat3.fromMat4)
+Mat3.fromQuat = F.factory(mat3.fromQuat)
+Mat3.normalFromMat4 = F.factory(mat3.normalFromMat4)
 
 window.Mat3 = window.M3 = Mat3

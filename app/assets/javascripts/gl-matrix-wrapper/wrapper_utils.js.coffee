@@ -36,14 +36,14 @@ WrapperUtils =
       new type(func(rv, @internal, s))
 
 
-  partiallyApplyTypes: (wrapperFuncs, type, internalType) ->
+  partiallyApplyTypes: (type, internalType) ->
     rv = {}
-    for k of wrapperFuncs
+    for k of WrapperUtils
       do (k) ->
-        if wrapperFuncs[k].length == 3
-          rv[k] = (wrappedFunc) -> wrapperFuncs[k](type, internalType, wrappedFunc)
+        if WrapperUtils[k].length == 3
+          rv[k] = (wrappedFunc) -> WrapperUtils[k](type, internalType, wrappedFunc)
         else
-          rv[k] = wrapperFuncs[k]
+          rv[k] = WrapperUtils[k]
     rv
 
 window.WrapperUtils = WrapperUtils
