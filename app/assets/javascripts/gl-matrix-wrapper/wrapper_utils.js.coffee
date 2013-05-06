@@ -39,10 +39,11 @@ WrapperUtils =
   partiallyApplyTypes: (wrapperFuncs, type, internalType) ->
     rv = {}
     for k of wrapperFuncs
-      if wrapperFuncs[k].length == 3
-        rv[k] = (wrappedFunc) -> wrapperFuncs[k](type, internalType, wrappedFunc)
-      else
-        rv[k] = wrapperFuncs[k]
+      do (k) ->
+        if wrapperFuncs[k].length == 3
+          rv[k] = (wrappedFunc) -> wrapperFuncs[k](type, internalType, wrappedFunc)
+        else
+          rv[k] = wrapperFuncs[k]
     rv
 
 window.WrapperUtils = WrapperUtils
