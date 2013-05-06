@@ -1,24 +1,7 @@
 #= require gl-matrix
+#= require gl-matrix-wrapper/wrapper_utils
 
-scalarUnaryOp = (func) ->
-  () ->
-    func(@internal)
-
-matrixUnaryOp = (func) ->
-  () ->
-    rv = mat2.create()
-    new Mat2(func(rv, @internal))
-
-matrixBinaryOp = (func) ->
-  (other) ->
-    rv = mat2.create()
-    new Mat2(func(rv, @internal, other.internal))
-
-matrixBinaryOpByScalar = (func) ->
-  (s) ->
-    rv = mat2.create()
-    new Mat2(func(rv, @internal, s))
-
+# Forward declaration of the class we're defining.
 class Mat2
   constructor: (args) ->
     if args instanceof Float32Array
@@ -28,18 +11,20 @@ class Mat2
     else
       @internal = mat2.create()
 
-  determinant: scalarUnaryOp(mat2.determinant)
-  str: scalarUnaryOp(mat2.str)
+F = WrapperUtils.partiallyApplyTypes(WrapperUtils, Mat2, mat2d)
 
-  adjoint: matrixUnaryOp(mat2.adjoint)
-  inverse: matrixUnaryOp(mat2.invert)
-  invert: matrixUnaryOp(mat2.invert)
-  transpose: matrixUnaryOp(mat2.transpose)
+Mat2::determinant = F.scalarUnaryOp(mat2.determinant)
+Mat2::str = F.scalarUnaryOp(mat2.str)
 
-  mul: matrixBinaryOp(mat2.multiply)
-  multiply: matrixBinaryOp(mat2.multiply)
-  scale: matrixBinaryOpByScalar(mat2.scale)
+Mat2::adjoint = F.typedUnaryOp(mat2.adjoint)
+Mat2::inverse = F.typedUnaryOp(mat2.invert)
+Mat2::invert = F.typedUnaryOp(mat2.invert)
+Mat2::transpose = F.typedUnaryOp(mat2.transpose)
 
-  rotate: matrixBinaryOpByScalar(mat2.rotate)
+Mat2::mul = F.typedBinaryOp(mat2.multiply)
+Mat2::multiply = F.typedBinaryOp(mat2.multiply)
+Mat2::scale = F.typedBinaryOpByScalar(mat2.scale)
+
+Mat2::rotate = F.typedBinaryOpByScalar(mat2.rotate)
 
 window.Mat2 = window.M2 = Mat2

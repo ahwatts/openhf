@@ -1,5 +1,11 @@
 #= require gl-matrix
 
+factory = (func) ->
+  (argp) ->
+    arg = if argp instanceof Float32Array then argp else argp.internal
+    rv = mat3.create()
+    new Mat3(func(rv, arg))
+
 scalarUnaryOp = (func) ->
   () ->
     func(@internal)
@@ -23,17 +29,8 @@ class Mat3
   constructor: (args) ->
     if args instanceof Float32Array
       @internal = mat3.clone(args)
-    else if args instanceof Mat2d
-      @internal = mat3.create()
-      mat3.fromMat2d(@internal, args.internal)
     else if args instanceof Mat3
       @internal = mat3.clone(args.internal)
-    else if args instanceof Mat4
-      @internal = mat3.create()
-      mat3.fromMat4(@internal, args.internal)
-    else if args instanceof Quat
-      @internal = mat3.create()
-      mat3.fromQuat(@internal, args.internal)
     else
       @internal = mat3.create()
 
@@ -52,11 +49,9 @@ class Mat3
 
   rotate: matrixBinaryOpByScalar(mat3.rotate)
 
-Mat3.normalFromMat4 = (m) ->
-  rv = mat3.create()
-  if m instanceof Float32Array
-    new Mat3(mat3.normalFromMat4(rv, m))
-  else
-    new Mat3(mat3.normalFromMat4(rv, m.internal))
+Mat3.fromMat2d = factory(mat3.fromMat2d)
+Mat3.fromMat4 = factory(mat3.fromMat4)
+Mat3.fromQuat = factory(mat3.fromQuat)
+Mat3.normalFromMat4 = factory(mat3.normalFromMat4)
 
 window.Mat3 = window.M3 = Mat3
