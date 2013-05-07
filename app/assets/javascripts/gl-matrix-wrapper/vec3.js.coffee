@@ -2,62 +2,60 @@
 #= require gl-matrix-wrapper/wrapper_utils
 
 class Vec3
-  constructor: (args) ->
-    if arguments.length == 3
-      @internal = vec3.clone(arguments)
-    else if args instanceof Float32Array
-      @internal = vec3.clone(args)
-    else if args instanceof Vector3
-      @internal = vec3.clone(args.internal)
-    else
+  constructor: (args...) ->
+    @internal = null
+
+    if args.length == 1
+      if args[0].hasOwnProperty('internal')
+        @internal = vec3.clone(args[0].internal)
+      else if args[0] instanceof Float32Array
+        @internal = vec3.clone(args[0])
+    else if args.length == 3
+      @internal = vec3.fromValues.apply(null, args)
+
+    if @internal == null
       @internal = vec3.create()
 
     [ @x, @y, @z ] = @internal
 
-  add: vectorBinaryOp(vec3.add)
-  cross: vectorBinaryOp(vec3.cross)
-  divide: vectorBinaryOp(vec3.divide)
-  div: vectorBinaryOp(vec3.divide)
-  max: vectorBinaryOp(vec3.max)
-  min: vectorBinaryOp(vec3.min)
-  mul: vectorBinaryOp(vec3.multiply)
-  multiply: vectorBinaryOp(vec3.multiply)
-  sub: vectorBinaryOp(vec3.subtract)
-  subtract: vectorBinaryOp(vec3.subtract)
+F = WrapperUtils.partiallyApplyTypes(Vec3, vec3)
 
-  dist: scalarBinaryOp(vec3.distance)
-  distance: scalarBinaryOp(vec3.distance)
-  dot: scalarBinaryOp(vec3.dot)
-  sqrDist: scalarBinaryOp(vec3.squaredDistance)
-  squaredDistance: scalarBinaryOp(vec3.squaredDistance)
+Vec3::len = F.scalarUnaryOp(vec3.length)
+Vec3::length = F.scalarUnaryOp(vec3.length)
+Vec3::sqrLen = F.scalarUnaryOp(vec3.squaredLength)
+Vec3::squaredLength = F.scalarUnaryOp(vec3.squaredLength)
+Vec3::str = F.scalarUnaryOp(vec3.str)
 
-  negate: vectorUnaryOp(vec3.negate)
-  normalize: vectorUnaryOp(vec3.normalize)
+Vec3::negate = F.typedUnaryOp(vec3.negate)
+Vec3::negative = F.typedUnaryOp(vec3.negate)
+Vec3::normalize = F.typedUnaryOp(vec3.normalize)
+Vec3::normalized = F.typedUnaryOp(vec3.normalize)
 
-  len: scalarUnaryOp(vec3.length)
-  length: scalarUnaryOp(vec3.length)
-  sqrLen: scalarUnaryOp(vec3.squaredLength)
-  squaredLength: scalarUnaryOp(vec3.squaredLength)
-  str: scalarUnaryOp(vec3.str)
+Vec3::dist = F.scalarBinaryOp(vec3.distance)
+Vec3::distance = F.scalarBinaryOp(vec3.distance)
+Vec3::dot = F.scalarBinaryOp(vec3.dot)
+Vec3::sqrDist = F.scalarBinaryOp(vec3.squaredDistance)
+Vec3::squaredDistance = F.scalarBinaryOp(vec3.squaredDistance)
 
-  lerp: (other, t) ->
-    rv = vec3.create()
-    new Vector3(vec3.lerp(rv, @internal, other.internal, t))
+Vec3::add = F.typedBinaryOp(vec3.add)
+Vec3::cross = F.typedBinaryOp(vec3.cross)
+Vec3::div = F.typedBinaryOp(vec3.divide)
+Vec3::divide = F.typedBinaryOp(vec3.divide)
+Vec3::max = F.typedBinaryOp(vec3.max)
+Vec3::min = F.typedBinaryOp(vec3.min)
+Vec3::mul = F.typedBinaryOp(vec3.multiply)
+Vec3::multiply = F.typedBinaryOp(vec3.multiply)
+Vec3::sub = F.typedBinaryOp(vec3.subtract)
+Vec3::subtract = F.typedBinaryOp(vec3.subtract)
+Vec3::transformMat3 = F.typedBinaryOp(vec3.transformMat3)
+Vec3::transformMat4 = F.typedBinaryOp(vec3.transformMat4)
+Vec3::transformQuat = F.typedBinaryOp(vec3.transformQuat)
 
-  scale: (a) ->
-    rv = vec3.create()
-    new Vector3(vec3.scale(rv, @internal, a))
+Vec3::scale = F.typedBinaryOpByScalar(vec3.scale)
 
-  scaleAndAdd: (other, a) ->
-    rv = vec3.create()
-    new Vector3(vec3.scaleAndAdd(rv, @internal, other.internal, a))
+Vec3::lerp = F.typedParameterizedBinaryOp(vec3.lerp)
+Vec3::scaleAndAdd = F.typedParameterizedBinaryOp(vec3.scale)
 
-  transformM3: () -> undefined.notImplemented
-  transformM4: () -> undefined.notImplemented
-  transformQ: () -> undefined.notImplemented
+Vec3.random = F.factory(vec3.random)
 
-Vector3.random = (scale) ->
-  rv = vec3.create()
-  vec3.random(rv, scale)
-
-window.Vector3 = window.V3 = Vector3
+window.Vector3 = window.Vec3 = window.V3 = Vec3

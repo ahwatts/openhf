@@ -57,11 +57,10 @@ Vec2::scale = F.typedBinaryOpByScalar(vec2.scale)
 Vec2::lerp = F.typedParameterizedBinaryOp(vec2.lerp)
 Vec2::scaleAndAdd = F.typedParameterizedBinaryOp(vec2.scaleAndAdd)
 
-Vec2.fromValues = F.factory(vec2.set)
-Vec2.random = F.factory(vec2.random)
-
 Vec2::cross = (other) ->
-  rv = vec2.create()
+  rv = vec3.create()
   new Vec3(vec2.cross(rv, @internal, other.internal))
+
+Vec2.random = F.factory(vec2.random)
 
 window.Vector2 = window.Vec2 = window.V2 = Vec2

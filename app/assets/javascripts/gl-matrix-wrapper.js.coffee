@@ -6,3 +6,4 @@
 #= require gl-matrix-wrapper/mat4
 #= require gl-matrix-wrapper/quat
 #= require gl-matrix-wrapper/vec2
+#= require gl-matrix-wrapper/vec3
