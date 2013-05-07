@@ -1,14 +1,17 @@
 #= require gl-matrix
 #= require gl-matrix-wrapper/wrapper_utils
 
-# Forward declaration of the class we're defining.
 class Mat2
-  constructor: (args) ->
-    if args instanceof Float32Array
-      @internal = mat2.clone(args)
-    else if args instanceof Mat2
-      @internal = mat2.clone(args.internal)
-    else
+  constructor: (args...) ->
+    @internal = null
+
+    if args.length == 1
+      if args[0].hasOwnProperty('internal')
+        @internal = mat2.clone(args[0].internal)
+      else if args[0] instanceof Float32Array
+        @internal = mat2.clone(args[0])
+
+    if @internal == null
       @internal = mat2.create()
 
 F = WrapperUtils.partiallyApplyTypes(Mat2, mat2d)

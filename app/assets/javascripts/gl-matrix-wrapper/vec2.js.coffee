@@ -4,17 +4,18 @@
 
 class Vec2
   constructor: (args...) ->
-    switch args.length
-      when 0 then @internal = vec2.create()
-      when 1
-        if args[0].hasOwnProperty('internal')
-          @internal = vec2.clone(args[0].internal)
-        else if args[0] instanceof Float32Array
-          @internal = vec2.clone(args[0])
-        else
-          @internal = vec2.create()
-      when 2 then @internal = vec2.fromValues.apply(null, args)
-      else @internal = vec2.create()
+    @internal = null
+
+    if args.length == 1
+      if args[0].hasOwnProperty('internal')
+        @internal = vec2.clone(args[0].internal)
+      else if args instanceof Float32Array
+        @internal = vec2.clone(args[0])
+    else if args.length == 2
+      @internal = vec2.fromValues.apply(null, args)
+
+    if @internal == null
+      @internal = vec2.create()
 
     [ @x, @y ] = @internal
 

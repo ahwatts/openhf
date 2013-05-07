@@ -2,12 +2,16 @@
 #= require gl-matrix-wrapper/wrapper_utils
 
 class Mat4
-  constructor: (args) ->
-    if args instanceof Float32Array
-      @internal = mat4.clone(args)
-    else if args instanceof Mat4
-      @internal = mat4.clone(args.internal)
-    else
+  constructor: (args...) ->
+    @internal = null
+
+    if args.length == 1
+      if args[0].hasOwnProperty('internal')
+        @internal = mat4.clone(args[0].internal)
+      else if args instanceof Float32Array
+        @internal = mat4.clone(args[0])
+
+    if @internal == null
       @internal = mat4.create()
 
 F = WrapperUtils.partiallyApplyTypes(Mat4, mat4)

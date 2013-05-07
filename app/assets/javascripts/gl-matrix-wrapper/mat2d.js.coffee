@@ -3,12 +3,16 @@
 
 # Forward declaration of the class we're defining.
 class Mat2d
-  constructor: (args) ->
-    if args instanceof Float32Array
-      @internal = mat2d.clone(args)
-    else if args instanceof Mat2d
-      @internal = mat2d.clone(args.internal)
-    else
+  constructor: (args...) ->
+    @internal = null
+
+    if args.length == 1
+      if args[0].hasOwnProperty('internal')
+        @internal = mat2d.clone(args[0].internal)
+      else if args[0] instanceof Float32Array
+        @internal = mat2d.clone(args[0])
+
+    if @internal == null
       @internal = mat2d.create()
 
 F = WrapperUtils.partiallyApplyTypes(Mat2d, mat2d)

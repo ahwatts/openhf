@@ -3,11 +3,15 @@
 
 class Quat
   constructor: (args) ->
-    if args instanceof Float32Array
-      @internal = quat.clone(args)
-    else if args instanceof Quat
-      @internal = quat.clone(args.internal)
-    else
+    @internal = null
+
+    if args.length == 1
+      if args[0].hasOwnProperty('internal')
+        @internal = quat.clone(args[0].internal)
+      else if args instanceof Float32Array
+        @internal = quat.clone(args[0])
+
+    if @internal == null
       @internal = quat.create()
 
     [ @x, @y, @z, @w ] = @internal

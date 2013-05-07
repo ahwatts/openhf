@@ -1,7 +1,7 @@
 #= require gl-matrix
 #= require gl-matrix-wrapper/wrapper_utils
 
-class Vector3
+class Vec3
   constructor: (args) ->
     if arguments.length == 3
       @internal = vec3.clone(arguments)
