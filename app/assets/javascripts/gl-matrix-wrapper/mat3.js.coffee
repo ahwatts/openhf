@@ -32,4 +32,4 @@ Mat3.fromMat4 = F.factory(mat3.fromMat4)
 Mat3.fromQuat = F.factory(mat3.fromQuat)
 Mat3.normalFromMat4 = F.factory(mat3.normalFromMat4)
 
-window.Mat3 = window.M3 = Mat3
+window.Matrix3 = window.Mat3 = window.M3 = Mat3

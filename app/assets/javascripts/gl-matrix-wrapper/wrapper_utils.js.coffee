@@ -1,10 +1,12 @@
 WrapperUtils =
   factory: (type, internalType, func) ->
     (args...) ->
-      fixedArgs = if a.hasOwnProperty('internal') then a.internal else a for a in args
+      fixedArgs = []
+      for a in args
+        fixedArgs.push(if a.hasOwnProperty('internal') then a.internal else a)
       rv = internalType.create()
       fixedArgs.unshift(rv)
-      new type(func.call(fixedArgs))
+      new type(func.apply(null, fixedArgs))
 
 
   scalarUnaryOp: (func) ->

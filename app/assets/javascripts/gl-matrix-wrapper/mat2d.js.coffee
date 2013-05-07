@@ -26,4 +26,4 @@ Mat2d::translate = F.typedBinaryOp(mat2d.translate)
 
 Mat2d::rotate = F.typedBinaryOpByScalar(mat2d.rotate)
 
-window.Mat2d = window.M2d = Mat2d
+window.Matrix2d = window.Mat2d = window.M2d = Mat2d

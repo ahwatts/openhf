@@ -34,4 +34,4 @@ Mat4.lookAt = F.factory(mat4.lookAt)
 Mat4.ortho = F.factory(mat4.ortho)
 Mat4.perspective = F.factory(mat4.perspective)
 
-window.Mat4 = window.M4 = Mat4
+window.Matrix4 = window.Mat4 = window.M4 = Mat4

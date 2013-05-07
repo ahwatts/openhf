@@ -27,4 +27,4 @@ Mat2::scale = F.typedBinaryOpByScalar(mat2.scale)
 
 Mat2::rotate = F.typedBinaryOpByScalar(mat2.rotate)
 
-window.Mat2 = window.M2 = Mat2
+window.Matrix2 = window.Mat2 = window.M2 = Mat2

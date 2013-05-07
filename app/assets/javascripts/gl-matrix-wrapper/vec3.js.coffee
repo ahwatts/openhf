@@ -1,22 +1,5 @@
 #= require gl-matrix
-
-scalarUnaryOp = (func) ->
-  () ->
-    func(@internal)
-
-vectorUnaryOp = (func) ->
-  () ->
-    rv = vec3.create()
-    new Vector3(func(rv, @internal))
-
-scalarBinaryOp = (func) ->
-  (other) ->
-    func(@internal, other.internal)
-
-vectorBinaryOp = (func) ->
-  (other) ->
-    rv = vec3.create()
-    new Vector3(func(rv, @internal, other.internal))
+#= require gl-matrix-wrapper/wrapper_utils
 
 class Vector3
   constructor: (args) ->
