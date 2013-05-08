@@ -2,4 +2,4 @@
 
 describe "Mat2", ->
   it "should create the identity matrix by default", ->
-    expect(new Mat2().internal).toBe([1, 0, 0, 1])
+    expect(new Mat2().internal).toEqual(new Float32Array([1, 0, 0, 1]))
