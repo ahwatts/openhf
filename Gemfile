@@ -11,6 +11,7 @@ group :assets do
   gem 'compass'
   gem 'compass-rails'
   gem 'sass-rails',   '~> 3.2.3'
+  gem 'teabag'
   gem 'therubyracer', :platform => :ruby
   gem 'uglifier', '>= 1.0.3'
 end
@@ -18,4 +19,8 @@ end
 group :development do
   gem 'thin'
   gem 'eventmachine', '~> 1.0.0.beta', :platforms => :mingw
+end
+
+group :development, :test do
+  gem 'jasmine'
 end
