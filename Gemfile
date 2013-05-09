@@ -19,6 +19,7 @@ end
 group :development do
   gem 'eventmachine', '~> 1.0.0.beta', :platforms => :mingw
   gem 'pry'
+  gem 'pry-rails'
   gem 'thin'
 end
 
