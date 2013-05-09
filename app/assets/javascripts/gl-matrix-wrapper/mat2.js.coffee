@@ -14,7 +14,7 @@ class Mat2
     if @internal == null
       @internal = mat2.create()
 
-F = WrapperUtils.partiallyApplyTypes(Mat2, mat2d)
+F = WrapperUtils.partiallyApplyTypes(Mat2, mat2)
 
 Mat2::determinant = F.scalarUnaryOp(mat2.determinant)
 Mat2::str = F.scalarUnaryOp(mat2.str)
@@ -26,7 +26,7 @@ Mat2::transpose = F.typedUnaryOp(mat2.transpose)
 
 Mat2::mul = F.typedBinaryOp(mat2.multiply)
 Mat2::multiply = F.typedBinaryOp(mat2.multiply)
-Mat2::scale = F.typedBinaryOpByScalar(mat2.scale)
+Mat2::scale = F.typedBinaryOp(mat2.scale)
 
 Mat2::rotate = F.typedBinaryOpByScalar(mat2.rotate)
 

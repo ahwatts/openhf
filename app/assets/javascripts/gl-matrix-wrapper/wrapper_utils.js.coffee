@@ -25,7 +25,8 @@ WrapperUtils =
   typedUnaryOp: (type, internalType, func) ->
     () ->
       rv = internalType.create()
-      new type(func(rv, @internal))
+      rv = func(rv, @internal)
+      if rv then new type(rv) else null
 
   typedBinaryOp: (type, internalType, func) ->
     (other) ->
