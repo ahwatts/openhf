@@ -17,8 +17,9 @@ group :assets do
 end
 
 group :development do
-  gem 'thin'
   gem 'eventmachine', '~> 1.0.0.beta', :platforms => :mingw
+  gem 'pry'
+  gem 'thin'
 end
 
 group :development, :test do
